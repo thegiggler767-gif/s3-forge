@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>S3 Forge</title>
+<meta name="description" content="S3 Forge is a Windows app for programming any ESP32 board in the Arduino core: editor, one-click upload, firmware flasher, serial monitor, live plotter, 96 examples and an AI coder.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --ground:#06070f; --panel:#0c0f1d; --panel2:#11152a; --line:#1d2340; --line2:#2a3157;
+  --text:#eef1ff; --mute:#9aa3ca; --dim:#656e9a;
+  --cyan:#00eaff; --magenta:#ff2bd6; --violet:#7b5cff; --ok:#33e6a0;
+  --grad:linear-gradient(115deg,#00eaff,#ff2bd6);
+  --display:"Chakra Petch","Bahnschrift","Segoe UI",system-ui,sans-serif;
+  --body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code",Consolas,ui-monospace,monospace;
+  --wrap:1180px; --gutter:clamp(16px,4vw,32px); --r:14px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--text);font:400 17px/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+::selection{background:rgba(0,234,255,.3)}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding-inline:var(--gutter)}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.eyebrow kbd{font:inherit;letter-spacing:.04em;color:var(--mute);border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:2px 6px;margin-left:8px;text-transform:none}
+section{scroll-margin-top:84px}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(6,7,15,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:700 19px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.brand svg{width:30px;height:30px;flex:none}
+.brand b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav{display:flex;gap:22px;margin-left:auto}
+.nav a{text-decoration:none;color:var(--mute);font-size:15px;font-weight:500}
+.nav a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:48px;padding:0 22px;border-radius:12px;font:600 16px/1 var(--body);text-decoration:none;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:transform .15s,box-shadow .2s,background-color .2s,border-color .2s}
+.btn.primary{background:var(--grad);color:#070812;box-shadow:0 10px 30px -10px rgba(255,43,214,.55)}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 14px 36px -10px rgba(0,234,255,.55)}
+.btn.ghost{border-color:var(--line2);color:var(--text);background:rgba(255,255,255,.03)}
+.btn.ghost:hover{border-color:var(--cyan)}
+.btn.small{height:38px;padding:0 16px;font-size:14px;border-radius:10px}
+@media (max-width:820px){.nav{display:none}.top .btn{margin-left:auto}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding-block:clamp(40px,7vw,88px) clamp(56px,8vw,104px);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:120%;pointer-events:none;
+  background:radial-gradient(40% 50% at 78% 30%,rgba(0,234,255,.14),transparent 70%),radial-gradient(35% 45% at 95% 75%,rgba(255,43,214,.12),transparent 70%),radial-gradient(30% 40% at 10% 10%,rgba(123,92,255,.10),transparent 70%)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,4vw,56px);align-items:center}
+.hero h1{font:700 clamp(36px,4.8vw,58px)/1.04 var(--display);letter-spacing:-.01em;margin:18px 0 20px}
+.hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:var(--mute);font-size:clamp(17px,1.6vw,19px);max-width:34em}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.fine{margin-top:18px;color:var(--dim);font:500 13px/1.5 var(--mono)}
+.fine span+span::before{content:"·";margin:0 8px;color:var(--line2)}
+
+.stage{position:relative}
+.window{border-radius:var(--r);border:1px solid var(--line);background:#0a0d1a;overflow:hidden;
+  box-shadow:0 50px 120px -50px rgba(0,234,255,.35),0 30px 70px rgba(0,0,0,.55)}
+.titlebar{display:flex;align-items:center;gap:8px;height:34px;padding:0 0 0 12px;background:#0b0e1c;border-bottom:1px solid var(--line);font:500 12px/1 var(--body);color:var(--mute)}
+.titlebar svg{width:14px;height:14px}
+.caps{margin-left:auto;display:flex;height:100%}
+.caps i{width:44px;display:grid;place-items:center;color:var(--dim);font-style:normal;font-size:12px}
+.hero .window{transform:perspective(1600px) rotateY(-5deg) rotateX(2deg);transform-origin:left center}
+
+.flashlog{position:absolute;left:-28px;bottom:-40px;width:min(440px,86%);display:flex;gap:16px;align-items:center;padding:16px 18px;border-radius:14px;
+  background:rgba(12,15,29,.94);border:1px solid var(--line2);box-shadow:0 24px 60px rgba(0,0,0,.6);backdrop-filter:blur(10px)}
+.ring{position:relative;width:74px;height:74px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .trk{stroke:#1a1f38}
+.ring .bar{stroke:url(#ringGrad);stroke-linecap:round;stroke-dasharray:201;stroke-dashoffset:0;transition:stroke-dashoffset .12s linear}
+.ring .pct{position:absolute;inset:0;display:grid;place-items:center;align-content:center;font:700 19px/1 var(--display)}
+.ring .pct small{display:block;font:600 8.5px/1 var(--mono);letter-spacing:.14em;color:var(--mute);margin-top:4px;text-align:center}
+.log{margin:0;min-width:0;flex:1;font:400 11.5px/1.65 var(--mono);color:var(--mute);white-space:pre;overflow:hidden}
+.log .ok{color:var(--ok)}
+.log .cmd{color:var(--dim)}
+.log .hl{color:var(--text)}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr)}
+  .hero .window{transform:none}
+  .flashlog{position:relative;left:auto;bottom:auto;width:100%;margin-top:-18px}
+}
+
+/* ---------- steps ---------- */
+.band{border-block:1px solid var(--line);background:linear-gradient(180deg,#080a15,#06070f)}
+.steps{padding-block:clamp(56px,7vw,88px)}
+.steps h2,.feat h2,.shelf-head h2,.specs h2,.pricing h2,.faq h2{font:700 clamp(28px,3.4vw,40px)/1.1 var(--display);letter-spacing:-.005em}
+.steps-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 32px;margin-bottom:44px}
+.steps-head p{color:var(--mute);max-width:30em}
+.track{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;list-style:none;margin:0;padding:0}
+.track::before{content:"";position:absolute;top:21px;left:22px;right:22px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta));opacity:.45}
+.track li{position:relative}
+.pad{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--ground);border:2px solid var(--cyan);font:700 17px/1 var(--display);color:var(--text);box-shadow:0 0 0 6px var(--ground),0 0 24px rgba(0,234,255,.35)}
+.track li:nth-child(n+3) .pad{border-color:var(--magenta);box-shadow:0 0 0 6px var(--ground),0 0 24px rgba(255,43,214,.3)}
+.track h3{font:600 19px/1.3 var(--body);margin:20px 0 8px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.track h3 kbd{font:600 11.5px/1 var(--mono);color:var(--mute);border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:3px 6px}
+.track p{color:var(--mute);font-size:15.5px}
+.track code{display:block;margin-top:14px;font:400 12.5px/1.5 var(--mono);color:var(--ok);background:#0a0d1a;border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+@media (max-width:900px){
+  .track{grid-template-columns:minmax(0,1fr);gap:32px}
+  .track::before{top:22px;bottom:22px;left:21px;right:auto;width:2px;height:auto;background:linear-gradient(180deg,var(--cyan),var(--magenta))}
+  .track li{padding-left:64px}
+  .pad{position:absolute;left:0;top:0}
+  .track h3{margin-top:8px}
+}
+
+/* ---------- features ---------- */
+.feats{padding-block:clamp(64px,8vw,112px);display:grid;gap:clamp(72px,9vw,128px)}
+.feat{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,4vw,64px);align-items:center}
+.feat.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.feat.flip .copy{order:2}
+.copy h2{margin:14px 0 16px}
+.copy>p{color:var(--mute)}
+.ticks{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:10px}
+.ticks li{position:relative;padding-left:28px;font-size:15.5px}
+.ticks li::before{content:"";position:absolute;left:2px;top:.5em;width:12px;height:7px;border-left:2px solid var(--ok);border-bottom:2px solid var(--ok);transform:rotate(-45deg)}
+.snippet{max-width:100%;margin-top:20px;font:400 13.5px/1.6 var(--mono);background:#0a0d1a;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;white-space:pre;color:var(--text)}
+.snippet .k{color:#ff79c6}.snippet .s{color:#f1fa8c}.snippet .f{color:#50fa7b}
+.caption{margin-top:10px;font:500 12.5px/1.4 var(--mono);color:var(--dim)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){
+  .feat,.feat.flip{grid-template-columns:minmax(0,1fr)}
+  .feat.flip .copy{order:0}
+}
+@media (max-width:560px){.pair{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- example shelf ---------- */
+.shelf-sec{padding-block:clamp(64px,8vw,112px)}
+.shelf-head{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,4vw,64px);align-items:center;margin-bottom:56px}
+.shelf-head .copy>p{color:var(--mute)}
+.stat{display:flex;gap:32px;margin-top:26px}
+.stat div{font:700 38px/1 var(--display)}
+.stat small{display:block;margin-top:6px;font:600 11px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.shelf{columns:4 210px;column-gap:32px;padding:28px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.shelf-group{break-inside:avoid;margin-bottom:24px}
+.shelf-group h3{display:flex;justify-content:space-between;gap:8px;font:600 11.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);padding-bottom:9px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.shelf-group h3 span{color:var(--dim)}
+.shelf-group ul{list-style:none;margin:0;padding:0}
+.shelf-group li{font-size:14.5px;line-height:1.35;padding:4px 0;color:var(--text)}
+@media (max-width:900px){.shelf-head{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:480px){.shelf{padding:20px}}
+
+/* ---------- specs (datasheet) ---------- */
+.specs{padding-block:clamp(64px,8vw,104px)}
+.sheet{margin-top:34px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+.sheet-cap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel2);font:600 12px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.sheet dl{margin:0}
+.sheet .row{display:grid;grid-template-columns:240px minmax(0,1fr);gap:8px 24px;padding:15px 22px;border-top:1px solid var(--line)}
+.sheet .row:first-child{border-top:0}
+.sheet dt{font:600 12px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.sheet dd{margin:0;font-size:15.5px}
+.sheet dd code{font:400 13.5px/1 var(--mono);color:var(--cyan)}
+@media (max-width:640px){.sheet .row{grid-template-columns:1fr;gap:4px}}
+
+/* ---------- pricing ---------- */
+.pricing{padding-block:clamp(64px,8vw,112px)}
+.price-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:24px;margin-top:40px;align-items:start}
+.card{position:relative;border-radius:18px;padding:clamp(24px,3vw,36px);background:var(--panel);border:1px solid var(--line)}
+.card.buy{border:1px solid transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box}
+.price{display:flex;align-items:baseline;gap:12px;margin:10px 0 4px}
+.price strong{font:700 64px/1 var(--display)}
+.price span{color:var(--mute);font-size:16px}
+.card .ticks{margin:24px 0 28px}
+.buy .btn{width:100%}
+.buy-note{margin-top:14px;color:var(--dim);font-size:14px}
+.buy-note[data-state="soon"]{color:var(--text)}
+.req h3{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+.req ul{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.req li{font-size:15.5px;color:var(--mute);padding-left:18px;position:relative}
+.req li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:2px;background:var(--magenta)}
+.req li b{color:var(--text);font-weight:600}
+@media (max-width:900px){.price-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- faq ---------- */
+.faq{padding-block:clamp(56px,7vw,96px)}
+.qa{margin-top:30px;border-top:1px solid var(--line)}
+.qa details{border-bottom:1px solid var(--line)}
+.qa summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:16px;padding:20px 0;font:600 18px/1.35 var(--body)}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::after{content:"+";font:400 26px/1 var(--mono);color:var(--cyan);transition:transform .2s}
+.qa details[open] summary::after{transform:rotate(45deg)}
+.qa details p{color:var(--mute);padding:0 0 22px;max-width:46em}
+
+/* ---------- footer ---------- */
+.foot{border-top:1px solid var(--line);padding-block:40px 56px;color:var(--dim);font-size:13.5px}
+.foot .wrap{display:grid;gap:14px}
+.foot .brand{font-size:16px;color:var(--text)}
+.foot p{max-width:62em}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .btn,.ring .bar{transition:none}
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300eaff'/%3E%3Cstop offset='1' stop-color='%23ff2bd6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 4l24 14v28L32 60 8 46V18z' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3Cpath d='M22 26l10-6 10 6v12l-10 6-10-6z' fill='url(%23g)'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00eaff"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00eaff"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient>
+    <symbol id="logo" viewBox="0 0 64 64"><path d="M32 4l24 14v28L32 60 8 46V18L32 4z" fill="none" stroke="url(#logoGrad)" stroke-width="3" stroke-linejoin="round"/><path d="M22 26l10-6 10 6v12l-10 6-10-6V26z" fill="url(#logoGrad)" opacity=".9"/><path d="M32 4v16M32 44v16M8 18l14 8M42 38l14 8M56 18l-14 8M22 38L8 46" stroke="url(#logoGrad)" stroke-width="2" opacity=".55"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="S3 Forge home"><svg aria-hidden="true"><use href="#logo"/></svg>S3 <b>Forge</b></a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#how">How it works</a><a href="#features">Features</a><a href="#examples">Examples</a><a href="#specs">Specs</a><a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn primary small" href="#pricing" data-buy>Buy · <span data-price>$19</span></a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Windows app for every ESP32 board</div>
+        <h1>From sketch to <em>blinking board</em> in one click.</h1>
+        <p class="lede">S3 Forge works with every ESP32 board in the Arduino core and puts your code editor, uploader, firmware flasher, serial monitor and live plotter in one fast Windows app. It ships with 96 ready-to-run examples and an AI coder that writes sketches from a sentence.</p>
+        <div class="cta">
+          <a class="btn primary" href="#pricing" data-buy>Buy S3 Forge · <span data-price>$19</span></a>
+          <a class="btn ghost" href="#how">See how it works</a>
+        </div>
+        <p class="fine"><span>One-time purchase</span><span>Windows 10 &amp; 11</span><span>No account needed</span></p>
+      </div>
+      <div class="stage">
+        <div class="window">
+          <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>S3 Forge<div class="caps" aria-hidden="true"><i>&#x2015;</i><i>&#x2610;</i><i>&#x2715;</i></div></div>
+          <img src="shots/editor.jpg" width="2880" height="1800" alt="S3 Forge code editor with a WiFi web dashboard sketch, board options, and flash and RAM usage rings after a successful build">
+        </div>
+        <div class="flashlog" aria-hidden="true">
+          <div class="ring">
+            <svg viewBox="0 0 74 74"><circle class="trk" cx="37" cy="37" r="32"/><circle class="bar" id="ringBar" cx="37" cy="37" r="32"/></svg>
+            <div class="pct"><span id="ringPct">100%</span><small id="ringStage">BOOT</small></div>
+          </div>
+<pre class="log" id="flashLog"><span class="cmd">▶ Upload  sketch.ino → COM6</span>
+Sketch uses 297282 bytes (22%)
+Chip type: ESP32-S3 (QFN56)
+<span class="hl">Writing at 0x00010000  100%</span>
+Hash of data verified.
+<span class="ok">✓ Uploaded and running · 6.8 s</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="wrap steps">
+      <div class="steps-head">
+        <div>
+          <div class="eyebrow">How it works</div>
+          <h2 style="margin-top:14px">Plug in, press Upload, watch it run.</h2>
+        </div>
+        <p>No board menus to hunt through and no separate tools to open. The whole loop lives in one window, and every step has a shortcut.</p>
+      </div>
+      <ol class="track">
+        <li><div class="pad">1</div><h3>Pick and plug in</h3><p>Search 400+ boards by name, from Dev Modules to M5Stack, Adafruit and Seeed XIAO. S3 Forge spots your board on USB and picks the port.</p><code>COM6 · Espressif USB</code></li>
+        <li><div class="pad">2</div><h3>Verify <kbd>Ctrl+R</kbd></h3><p>Compile and see exactly how much flash and RAM your sketch uses. Errors jump straight to the line.</p><code>Sketch uses 297282 bytes (22%)</code></li>
+        <li><div class="pad">3</div><h3>Upload <kbd>Ctrl+U</kbd></h3><p>Compile, connect, write, verify and boot in one go. A board stuck in download mode gets rebooted into your code.</p><code>Writing at 0x00010000 (64%)</code></li>
+        <li><div class="pad">4</div><h3>Watch <kbd>Ctrl+M</kbd></h3><p>Connect to the board, then read the serial monitor or watch your values on the live plotter.</p><code>temp:23.40 hum:48.10</code></li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="wrap feats" id="features">
+    <section class="feat" aria-labelledby="f-upload">
+      <div class="copy">
+        <div class="eyebrow">Upload <kbd>Ctrl+U</kbd></div>
+        <h2 id="f-upload">Uploads you can follow.</h2>
+        <p>Every upload shows its five stages and a live percentage, so you always know whether it is compiling, talking to the chip or writing flash. Send it to the background and keep editing.</p>
+        <ul class="ticks">
+          <li>Compile, connect, write, verify and boot</li>
+          <li>Automatic reboot out of download mode</li>
+          <li>Serial monitor reconnects on its own after uploading</li>
+        </ul>
+      </div>
+      <div class="window">
+        <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>S3 Forge · Uploading<div class="caps" aria-hidden="true"><i>&#x2015;</i><i>&#x2610;</i><i>&#x2715;</i></div></div>
+        <img src="shots/upload.jpg" width="2880" height="1800" loading="lazy" alt="Upload in progress: a ring at 64 percent with the stages Compile, Connect, Write, Verify and Boot">
+      </div>
+    </section>
+
+    <section class="feat flip" aria-labelledby="f-plot">
+      <div class="copy">
+        <div class="eyebrow">Serial plotter</div>
+        <h2 id="f-plot">Plot anything you print.</h2>
+        <p>Name your values in a normal print statement and each one becomes its own live line. Pause, clear, and choose a window from 100 to 2000 points.</p>
+<pre class="snippet"><span class="f">Serial</span>.<span class="f">printf</span>(<span class="s">"temp:%.2f hum:%.2f\n"</span>, t, h);</pre>
+        <ul class="ticks">
+          <li>Serial monitor from 9600 to 921600 baud</li>
+          <li>Send commands back with your choice of line ending</li>
+        </ul>
+      </div>
+      <div class="window">
+        <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>S3 Forge · Serial Plotter<div class="caps" aria-hidden="true"><i>&#x2015;</i><i>&#x2610;</i><i>&#x2715;</i></div></div>
+        <img src="shots/plotter.jpg" width="2880" height="1800" loading="lazy" alt="Serial plotter drawing three live waves named sin, cos and mix">
+      </div>
+    </section>
+
+    <section class="feat" aria-labelledby="f-ai">
+      <div class="copy">
+        <div class="eyebrow">AI coder</div>
+        <h2 id="f-ai">Describe it. Get a sketch.</h2>
+        <p>Type what you want to build and the AI Coder writes a complete ESP32-S3 sketch. Insert it into the editor, or insert and upload in one click.</p>
+        <ul class="ticks">
+          <li>OpenRouter free models, Anthropic Claude or OpenAI GPT</li>
+          <li>Uses your own API key, sent straight to the provider</li>
+          <li>Starter prompts for web dashboards, sensors and games</li>
+        </ul>
+      </div>
+      <div class="window">
+        <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>S3 Forge · AI Coder<div class="caps" aria-hidden="true"><i>&#x2015;</i><i>&#x2610;</i><i>&#x2715;</i></div></div>
+        <img src="shots/ai.jpg" width="2880" height="1800" loading="lazy" alt="AI Coder with a prompt for an LED web page and the Arduino sketch it generated">
+      </div>
+    </section>
+
+    <section class="feat flip" aria-labelledby="f-flash">
+      <div class="copy">
+        <div class="eyebrow">Firmware flasher</div>
+        <h2 id="f-flash">Flash MicroPython, CircuitPython or any .bin.</h2>
+        <p>esptool is built in. Put a merged image at <code style="font-family:var(--mono);color:var(--cyan)">0x0</code>, or load the bootloader, partition table and app separately, then press Flash.</p>
+        <ul class="ticks">
+          <li>Flash at up to 921600 baud, with optional full erase</li>
+          <li>Read the chip's type, MAC, flash size and PSRAM</li>
+          <li>Reset or fully erase a board from the same panel</li>
+        </ul>
+      </div>
+      <div class="pair">
+        <div class="window">
+          <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>Flash Firmware</div>
+          <img src="shots/flash.jpg" width="2880" height="1800" loading="lazy" alt="Firmware flasher with a MicroPython image queued at address 0x0">
+        </div>
+        <div class="window">
+          <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>Device</div>
+          <img src="shots/device.jpg" width="2880" height="1800" loading="lazy" alt="Device panel listing ESP32-S3 details: 16MB flash, 8MB PSRAM, 240MHz dual core and the MAC address">
+        </div>
+      </div>
+    </section>
+
+    <section class="feat" aria-labelledby="f-community">
+      <div class="copy">
+        <div class="eyebrow">Community &amp; sync</div>
+        <h2 id="f-community">Share what you build.</h2>
+        <p>Sign in with a free account to post your projects with photos, video and code. Browse other builds by category, like the ones you love and load any of them straight into your editor.</p>
+        <ul class="ticks">
+          <li>Settings, API keys and saved sketches follow you between PCs</li>
+          <li>Edit or delete your own posts any time</li>
+          <li>Everything else works without an account</li>
+        </ul>
+      </div>
+      <div>
+        <div class="window">
+          <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>S3 Forge · Media<div class="caps" aria-hidden="true"><i>&#x2015;</i><i>&#x2610;</i><i>&#x2715;</i></div></div>
+          <img src="shots/media.jpg" width="2880" height="1800" loading="lazy" alt="Community gallery with project cards, category filters and likes">
+        </div>
+        <p class="caption">Gallery shown with sample posts.</p>
+      </div>
+    </section>
+  </div>
+
+  <section class="band" id="examples">
+    <div class="wrap shelf-sec">
+      <div class="shelf-head">
+        <div class="copy">
+          <div class="eyebrow">Example library</div>
+          <h2>A shelf of sketches that already work.</h2>
+          <p>Every example is compile-tested on the ESP32-S3. Open one to read what it does and which pins it uses, then load it or upload it straight away. If an example needs an extra library, S3 Forge tells you and installs it in one click.</p>
+          <div class="stat"><div>96<small>Examples</small></div><div>18<small>Categories</small></div></div>
+        </div>
+        <div class="window">
+          <div class="titlebar"><svg aria-hidden="true"><use href="#logo"/></svg>S3 Forge · Examples<div class="caps" aria-hidden="true"><i>&#x2015;</i><i>&#x2610;</i><i>&#x2715;</i></div></div>
+          <img src="shots/example-detail.jpg" width="2880" height="1800" loading="lazy" alt="Example detail for an OLED sketch showing its code, the GPIO pins it uses and an Install libraries button">
+        </div>
+      </div>
+      <div class="shelf" aria-label="All 96 examples by category">
+<div class="shelf-group"><h3>Basics <span>4</span></h3><ul><li>Hello S3 (Blink + Serial)</li><li>Blink Without Delay</li><li>Two-Task Scheduler</li><li>Morse Code Beacon</li></ul></div>
+<div class="shelf-group"><h3>LED Effects <span>10</span></h3><ul><li>RGB Rainbow (onboard LED)</li><li>Rainbow Strip (WS2812)</li><li>Knight Rider Scanner</li><li>RGB Strobe</li><li>RGB Police Lights</li><li>RGB Heartbeat Pulse</li><li>RGB Twinkle</li><li>RGB Fire Flicker</li><li>Sound-Reactive LED</li><li>NeoPixel Comet</li></ul></div>
+<div class="shelf-group"><h3>PWM &amp; Output <span>5</span></h3><ul><li>Breathing LED (PWM)</li><li>Dual LED Crossfade</li><li>Servo Sweep</li><li>Servo 3-Position</li><li>Motor Speed Ramp</li></ul></div>
+<div class="shelf-group"><h3>Motors <span>4</span></h3><ul><li>Stepper 28BYJ-48 (no library)</li><li>DC Motor H-Bridge</li><li>Servo Knob</li><li>AccelStepper Smooth Moves</li></ul></div>
+<div class="shelf-group"><h3>Sound &amp; Music <span>5</span></h3><ul><li>Tone Melody</li><li>Buzzer Siren</li><li>Metronome</li><li>Ode to Joy</li><li>Light Theremin</li></ul></div>
+<div class="shelf-group"><h3>Analog Sensors <span>5</span></h3><ul><li>Potentiometer Plotter</li><li>Light Sensor Plotter</li><li>Analog Voltage Meter</li><li>Soil Moisture Plot</li><li>Joystick Reader</li></ul></div>
+<div class="shelf-group"><h3>Digital Sensors <span>5</span></h3><ul><li>DHT22 Temp &amp; Humidity</li><li>BMP280 Pressure &amp; Altitude</li><li>DS18B20 Temperature</li><li>I2C Scanner</li><li>MPU6050 Tilt Plotter</li></ul></div>
+<div class="shelf-group"><h3>Digital I/O <span>7</span></h3><ul><li>Button Counter</li><li>Debounced Toggle LED</li><li>Traffic Light</li><li>Rotary Encoder Counter</li><li>PIR Motion Alarm</li><li>IR Obstacle Detector</li><li>Ultrasonic Distance</li></ul></div>
+<div class="shelf-group"><h3>Touch <span>3</span></h3><ul><li>Touch Sensor (plot it!)</li><li>Touch Piano</li><li>Touch Slider</li></ul></div>
+<div class="shelf-group"><h3>Displays <span>3</span></h3><ul><li>OLED Hello (SSD1306)</li><li>OLED Live Graph</li><li>OLED WiFi Clock</li></ul></div>
+<div class="shelf-group"><h3>WiFi &amp; Network <span>9</span></h3><ul><li>WiFi Scanner</li><li>WiFi Connect + mDNS</li><li>WiFi Signal Meter</li><li>NTP Internet Clock</li><li>WiFi MAC Address</li><li>Weather from the Internet</li><li>MQTT Publish &amp; Subscribe</li><li>ESP-NOW Chat (no router)</li><li>Discord Webhook Button</li></ul></div>
+<div class="shelf-group"><h3>Web Apps <span>6</span></h3><ul><li>WiFi Web Dashboard</li><li>WiFi RGB Web Control</li><li>WiFi Web Text Sign</li><li>Web Slider -&gt; LED</li><li>Captive Portal Page</li><li>REST API (JSON)</li></ul></div>
+<div class="shelf-group"><h3>Bluetooth <span>3</span></h3><ul><li>BLE Beacon Scanner</li><li>BLE Advertise Name</li><li>BLE Phone Chat (UART)</li></ul></div>
+<div class="shelf-group"><h3>Storage <span>3</span></h3><ul><li>Boot Counter (saved)</li><li>NVS Key-Value Store</li><li>LittleFS File Logger</li></ul></div>
+<div class="shelf-group"><h3>Power &amp; Sleep <span>2</span></h3><ul><li>Deep Sleep Saver</li><li>Touch Wake from Sleep</li></ul></div>
+<div class="shelf-group"><h3>System &amp; Info <span>6</span></h3><ul><li>Chip Stats</li><li>Internal Temp Monitor</li><li>Reset Reason</li><li>Heap Monitor</li><li>FreeRTOS Dual-Core Tasks</li><li>Hardware Timer Interrupt</li></ul></div>
+<div class="shelf-group"><h3>Serial &amp; Plotter <span>6</span></h3><ul><li>Plotter Demo (sine waves)</li><li>Serial Command Echo</li><li>Starfield Animation</li><li>CSV Data Logger</li><li>Lissajous Plot</li><li>Random Walk Plot</li></ul></div>
+<div class="shelf-group"><h3>Games &amp; Fun <span>10</span></h3><ul><li>Reaction Timer Game</li><li>Dice Roller</li><li>Simon Says (memory game)</li><li>Stopwatch</li><li>Magic 8-Ball</li><li>Coin Flip</li><li>Number Guess Game</li><li>Rock Paper Scissors</li><li>Hangman</li><li>Virtual Pet</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap specs" id="specs">
+    <div class="eyebrow">Specifications</div>
+    <h2 style="margin-top:14px">The details, datasheet style.</h2>
+    <div class="sheet">
+      <div class="sheet-cap"><span>Table 1 · S3 Forge 1.5</span><span>Windows 10 / 11 · x64</span></div>
+      <dl>
+        <div class="row"><dt>Editor</dt><dd>Arduino C++ highlighting, errors that jump to the line, flash and RAM use after every build, six accent themes</dd></div>
+        <div class="row"><dt>Boards</dt><dd>Every board in the ESP32 Arduino core, 400+ in version 3.3: ESP32, S2, S3, C2, C3, C5, C6, H2 and P4 boards from Espressif, Adafruit, M5Stack, Seeed, LOLIN, Waveshare and more</dd></div>
+        <div class="row"><dt>Compile &amp; upload</dt><dd>Arduino CLI with the ESP32 Arduino core 3.x. One-click core install</dd></div>
+        <div class="row"><dt>Firmware flashing</dt><dd>Built-in esptool for ESP32, S2, S3, C2, C3, C5, C6, C61, H2 and P4, or auto-detect. Any <code>.bin</code> at any address, merged images at <code>0x0</code>, full erase</dd></div>
+        <div class="row"><dt>Serial</dt><dd>Monitor and live plotter, <code>9600</code> – <code>921600</code> baud, 100 – 2000 point plot window</dd></div>
+        <div class="row"><dt>Board options</dt><dd>Each board's own menus: flash size, partition scheme, PSRAM, USB mode, CPU speed, upload speed, debug level and more, remembered per board</dd></div>
+        <div class="row"><dt>Examples</dt><dd>96 sketches in 18 categories, all compile-tested on ESP32 Arduino core 3.3, with one-click library install</dd></div>
+        <div class="row"><dt>AI coder</dt><dd>OpenRouter (free models), Anthropic Claude, OpenAI GPT. Bring your own key</dd></div>
+        <div class="row"><dt>Account (optional)</dt><dd>Free sign-in for the community gallery and for syncing settings, keys and sketches</dd></div>
+        <div class="row"><dt>Keyboard</dt><dd><code>Ctrl+K</code> palette, <code>Ctrl+R</code> verify, <code>Ctrl+U</code> upload, <code>Ctrl+M</code> connect serial, <code>Ctrl+1…9</code> views</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band" id="pricing">
+    <div class="wrap pricing">
+      <div class="eyebrow">Pricing</div>
+      <h2 style="margin-top:14px">One price. Every feature.</h2>
+      <div class="price-grid">
+        <div class="card buy">
+          <div class="brand" style="font-size:17px"><svg aria-hidden="true"><use href="#logo"/></svg>S3 <b>Forge</b></div>
+          <div class="price"><strong data-price>$19</strong><span>one-time purchase</span></div>
+          <ul class="ticks">
+            <li>The full app: editor, uploader, flasher, monitor and plotter</li>
+            <li>96 examples in 18 categories</li>
+            <li>AI Coder with your own OpenRouter, Claude or GPT key</li>
+            <li>Free account for sync and the community gallery</li>
+          </ul>
+          <a class="btn primary" href="#pricing" data-buy data-main>Buy S3 Forge · <span data-price>$19</span></a>
+          <p class="buy-note" id="buyNote">After checkout you get a download link for the Windows installer.</p>
+        </div>
+        <div class="card req">
+          <h3>What you need</h3>
+          <ul>
+            <li><b>Windows 10 or 11</b>, 64-bit</li>
+            <li><b>Any ESP32 board</b> and a USB cable that carries data</li>
+            <li><b>The free Arduino CLI</b> for compiling. S3 Forge finds it and installs the ESP32 core for you. Flashing .bin files works without it</li>
+            <li><b>Optional:</b> an API key for the AI Coder, and a free account for sync and sharing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap faq" id="faq">
+    <div class="eyebrow">FAQ</div>
+    <h2 style="margin-top:14px">Questions people ask first.</h2>
+    <div class="qa">
+      <details open><summary>Which boards does it support?</summary><p>Any ESP32 board the Arduino IDE supports. S3 Forge reads the full board list from the ESP32 Arduino core, 400+ boards across the ESP32, S2, S3, C2, C3, C5, C6, H2 and P4, and shows each board's own options like flash size and partition scheme. If the connected chip doesn't match the board you picked, it tells you.</p></details>
+      <details><summary>Do I need the Arduino IDE?</summary><p>No. S3 Forge compiles with the free Arduino CLI, finds it automatically, and can install the ESP32 board package for you. Flashing ready-made .bin files needs nothing else.</p></details>
+      <details><summary>Is the AI Coder free?</summary><p>It uses your own API key. OpenRouter offers free models, so you can start without paying anything. Claude and GPT bill to your own account with those providers.</p></details>
+      <details><summary>Where is my API key stored?</summary><p>On your PC, in S3 Forge's settings. If you sign in to sync, it is also saved to your account so your other PCs have it. It is only ever sent to the AI provider you picked.</p></details>
+      <details><summary>Do I need an account?</summary><p>No. Everything works without signing in except the community gallery and syncing between PCs.</p></details>
+      <details><summary>Does it run on Mac or Linux?</summary><p>Not yet. S3 Forge is Windows-only for now.</p></details>
+      <details><summary>What happens after I buy?</summary><p>You get a download link for the Windows installer. Run it, open S3 Forge, and it starts with a blink sketch loaded and ready to upload.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg aria-hidden="true"><use href="#logo"/></svg>S3 <b>Forge</b></a>
+    <p>© 2026 S3 Forge. ESP32, ESP32-S2, ESP32-S3 and ESP32-C3 are trademarks of Espressif Systems. Arduino is a trademark of Arduino SA. S3 Forge is an independent product and is not affiliated with Espressif or Arduino.</p>
+  </div>
+</footer>
+
+<script>
+/* Store settings: set your price and paste your checkout link (Gumroad, Lemon Squeezy or a Stripe Payment Link). */
+const STORE = {
+  price: "$19",
+  checkoutUrl: ""
+};
+
+(function store(){
+  document.querySelectorAll("[data-price]").forEach(el => { el.textContent = STORE.price; });
+  const live = /^https:\/\//.test(STORE.checkoutUrl);
+  document.querySelectorAll("[data-buy]").forEach(a => {
+    if (live) { a.href = STORE.checkoutUrl; a.target = "_blank"; a.rel = "noopener"; return; }
+    if (a.hasAttribute("data-main")) a.addEventListener("click", e => {
+      e.preventDefault();
+      const note = document.getElementById("buyNote");
+      note.dataset.state = "soon";
+      note.textContent = "Checkout opens soon. S3 Forge is almost ready to ship.";
+    });
+  });
+})();
+
+(function uploadLog(){
+  const log = document.getElementById("flashLog"), bar = document.getElementById("ringBar");
+  const pct = document.getElementById("ringPct"), stage = document.getElementById("ringStage");
+  if (!log || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const C = 2 * Math.PI * 32;
+  bar.style.strokeDasharray = C;
+  const set = (p, s) => { bar.style.strokeDashoffset = C * (1 - p / 100); pct.textContent = Math.round(p) + "%"; stage.textContent = s; };
+  const esc = s => s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  let lines = [], timer = 0;
+  const draw = () => { log.innerHTML = lines.map(([cls, t]) => cls ? `<span class="${cls}">${esc(t)}</span>` : esc(t)).join("\n"); };
+  const wait = ms => new Promise(r => { timer = setTimeout(r, ms); });
+  async function run(){
+    for (;;) {
+      lines = [["cmd", "▶ Upload  sketch.ino → COM6"]]; set(0, "COMPILE"); draw();
+      await wait(900);  lines.push(["", "Sketch uses 297282 bytes (22%)"]); set(8, "COMPILE"); draw();
+      await wait(700);  lines.push(["", "Connecting...."]); set(14, "CONNECT"); draw();
+      await wait(800);  lines.push(["", "Chip type: ESP32-S3 (QFN56)"]); set(18, "CONNECT"); draw();
+      await wait(500);  lines.push(["hl", "Writing at 0x00010000    0%"]);
+      for (let p = 0; p <= 100; p += 4) {
+        lines[lines.length - 1][1] = "Writing at 0x00010000  " + String(p).padStart(3) + "%";
+        set(18 + p * 0.72, "WRITE"); draw(); await wait(70);
+      }
+      await wait(300);  lines.push(["", "Hash of data verified."]); set(94, "VERIFY"); draw();
+      await wait(600);  lines.push(["ok", "✓ Uploaded and running · 6.8 s"]); set(100, "BOOT"); draw();
+      await wait(3600);
+    }
+  }
+  const io = "IntersectionObserver" in window ? new IntersectionObserver(es => {
+    if (es.some(e => e.isIntersecting)) { io.disconnect(); run(); }
+  }) : null;
+  io ? io.observe(log) : run();
+})();
+</script>
+
+</body>
+</html>
